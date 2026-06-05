@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skylight OS</title>
+  <style>
+    :root {
+      --font-body: 'Cantarell', 'Segoe UI', sans-serif;
+      --font-display: 'Cantarell', 'Segoe UI', sans-serif;
+      --text-sm: clamp(0.875rem, 0.82rem + 0.2vw, 1rem);
+      --text-base: clamp(1rem, 0.96rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.25rem, 1.05rem + 0.75vw, 1.6rem);
+      --text-xl: clamp(2rem, 1.4rem + 2vw, 3rem);
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --bg: #f6f5f4;
+      --surface: #ffffff;
+      --surface-soft: #fafafa;
+      --border: #d6d3d1;
+      --text: #241f31;
+      --text-muted: #5e5c64;
+      --accent: #3584e4;
+      --accent-strong: #1c71d8;
+      --nav-bg: rgba(255, 255, 255, 0.9);
+      --shadow: 0 8px 24px rgba(36, 31, 49, 0.14);
+      --card-shadow: 0 10px 30px rgba(36, 31, 49, 0.08);
+      --radius-sm: 12px;
+      --content: 1120px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #1e1e1e;
+      --surface: #2b2b2b;
+      --surface-soft: #323232;
+      --border: #4a4a4a;
+      --text: #f6f5f4;
+      --text-muted: #c0bfbc;
+      --accent: #78aeed;
+      --accent-strong: #99c1f1;
+      --nav-bg: rgba(43, 43, 43, 0.9);
+      --shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+      --card-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme]) {
+        --bg: #1e1e1e;
+        --surface: #2b2b2b;
+        --surface-soft: #323232;
+        --border: #4a4a4a;
+        --text: #f6f5f4;
+        --text-muted: #c0bfbc;
+        --accent: #78aeed;
+        --accent-strong: #99c1f1;
+        --nav-bg: rgba(43, 43, 43, 0.9);
+        --shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+        --card-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 12%, transparent), transparent 28%),
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 65%, white 35%) 0%, var(--bg) 100%);
+      transition: background 180ms ease, color 180ms ease;
+    }
+
+    a, button, .feature-image { transition: background 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; }
+    a { color: inherit; text-decoration: none; }
+    img, svg { display: block; max-width: 100%; }
+
+    .container { width: min(calc(100% - 2rem), var(--content)); margin: 0 auto; }
+    .skip-link { position: absolute; left: -9999px; top: 0; }
+    .skip-link:focus { left: 1rem; top: 1rem; background: var(--surface); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); z-index: 100; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 10; background: var(--nav-bg); backdrop-filter: blur(14px);
+      box-shadow: var(--shadow); border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    }
+
+    .nav-wrap { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-weight: 700; letter-spacing: -0.02em; }
+    .brand-logo { width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; font-size: 3rem; line-height: 1; flex: 0 0 auto; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+    .brand-text small { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.02em; }
+
+    .nav-links, .nav-menu { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+    .nav-links a, .theme-toggle {
+      min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 var(--space-4);
+      border-radius: 999px; font-size: var(--text-sm); font-weight: 600; border: 1px solid transparent;
+    }
+
+    .nav-links a { color: var(--text-muted); }
+
+    .nav-links a:hover, .nav-links a:focus-visible, .theme-toggle:hover, .theme-toggle:focus-visible {
+      background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-strong); outline: none;
+    }
+
+    .theme-toggle {
+      min-width: 48px; background: var(--surface); color: var(--text); border-color: var(--border);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, white 35%, transparent);
+    }
+
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .hero { padding: var(--space-16) 0 var(--space-12); }
+    .hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--space-8); align-items: center; }
+    .hero-copy h1 { font-family: var(--font-display); font-size: var(--text-xl); line-height: 1.05; letter-spacing: -0.04em; margin-bottom: var(--space-4); }
+    .hero-copy p { max-width: 58ch; color: var(--text-muted); margin-bottom: var(--space-6); }
+    .hero-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+    .button {
+      min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 var(--space-6);
+      border-radius: 999px; font-weight: 700; font-size: var(--text-sm); border: 1px solid transparent;
+    }
+
+    .button.primary { background: var(--accent); color: white; box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 30%, transparent); }
+    .button.secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .button:hover, .button:focus-visible { transform: scale(1.04); }
+
+    .hero-panel {
+      background: linear-gradient(160deg, color-mix(in srgb, var(--surface) 92%, white 8%), color-mix(in srgb, var(--surface-soft) 90%, var(--bg) 10%));
+      border: 1px solid color-mix(in srgb, var(--border) 82%, transparent); border-radius: 28px; padding: var(--space-8); box-shadow: var(--card-shadow);
+    }
+
+    .window-bar { display: flex; gap: 0.45rem; margin-bottom: var(--space-6); }
+    .window-bar span { width: 12px; height: 12px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 35%, var(--surface)); }
+    .hero-card { background: var(--surface); border: 1px solid color-mix(in srgb, var(--border) 75%, transparent); border-radius: 22px; padding: var(--space-6); }
+    .hero-card h2 { font-size: 1.15rem; margin-bottom: var(--space-2); }
+    .hero-card p { color: var(--text-muted); font-size: var(--text-sm); }
+
+    .features { padding: var(--space-8) 0 var(--space-16); }
+    .section-title { font-size: var(--text-lg); margin-bottom: var(--space-8); letter-spacing: -0.03em; }
+    .feature-list { display: grid; gap: var(--space-8); }
+
+    .feature-row {
+      display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: var(--space-8); align-items: center;
+      background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+      border-radius: 26px; padding: var(--space-6); box-shadow: var(--card-shadow);
+    }
+
+    .feature-row:nth-child(even) .image-slot { order: 2; }
+    .feature-row:nth-child(even) .feature-copy { order: 1; }
+
+    .image-slot {
+      min-height: 230px; border-radius: 22px; border: 2px dashed color-mix(in srgb, var(--accent) 30%, transparent);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--surface) 95%, transparent)), var(--surface-soft);
+      display: grid; place-items: center; padding: var(--space-6); text-align: center; color: var(--accent-strong); font-weight: 700;
+    }
+
+    .image-slot span {
+      display: inline-block; padding: 0.4rem 0.9rem; border-radius: 999px; background: color-mix(in srgb, var(--surface) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .feature-image {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 22px;
+      border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 35%, transparent);
+      background: var(--surface-soft);
+    }
+
+    .feature-image:hover, .feature-image:focus-visible {
+      transform: scale(1.02);
+      outline: none;
+    }
+
+    .feature-copy h3 { font-size: 1.45rem; margin-bottom: var(--space-3); letter-spacing: -0.03em; }
+    .feature-copy p { color: var(--text-muted); margin-bottom: var(--space-4); max-width: 54ch; }
+    .feature-copy ul { list-style: none; display: grid; gap: var(--space-2); color: var(--text); font-size: var(--text-sm); }
+    .feature-copy li::before { content: '•'; color: var(--accent); margin-right: 0.55rem; }
+    footer { padding: var(--space-8) 0 var(--space-10); color: var(--text-muted); font-size: var(--text-sm); }
+
+    @media (max-width: 860px) {
+      .hero-grid, .feature-row { grid-template-columns: 1fr; }
+      .feature-row:nth-child(even) .image-slot, .feature-row:nth-child(even) .feature-copy { order: initial; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-wrap { flex-direction: column; align-items: flex-start; padding: var(--space-4) 0; }
+      .nav-links { width: 100%; justify-content: space-between; }
+      .hero { padding-top: var(--space-12); }
+      .hero-panel, .feature-row { padding: var(--space-4); }
+      .image-slot { min-height: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="topbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="#home" aria-label="Skylight OS home">
+        <span class="brand-logo" aria-hidden="true">🪐</span>
+        <span class="brand-text"><span>Skylight OS</span><small>NixOS configuration</small></span>
+      </a>
+      <div class="nav-links">
+        <nav class="nav-menu" aria-label="Primary navigation">
+          <a href="#home">Homepage</a>
+          <a href="https://github.com/WeeScottishMan/SkylightOS" target="_blank" rel="noopener noreferrer">Download</a>
+        </nav>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+          <span class="theme-icon" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1>A clear, calm NixOS experience built for everyday use.</h1>
+          <p>Skylight OS pairs declarative power with an Adwaita-inspired interface, giving your desktop a clean GNOME feel while keeping the flexibility and reliability of NixOS at the core.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://github.com/WeeScottishMan/SkylightOS">Download</a>
+            <a class="button secondary" href="#features">See features</a>
+          </div>
+        </div>
+        <div class="hero-panel" aria-label="Skylight OS preview card">
+          <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="hero-card">
+            <h2>Simple by default</h2>
+            <p>Curated packages, polished defaults, and a desktop that feels unique, polished and minimal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="container">
+        <h2 class="section-title">Highlights</h2>
+        <div class="feature-list">
+          <article class="feature-row">
+            <img class="feature-image" src="https://files.catbox.moe/uzz815.png" alt="Gaming desktop screenshot for Skylight OS" />
+            <div class="feature-copy">
+              <h3>🎮 Gaming-first</h3>
+              <p>Skylight OS is tuned for play first, with a CachyOS-optimized kernel, the scx_rustland scheduler, ananicy rules, and cachyos-settings built into the experience.</p>
+              <ul>
+                <li>Optimized for gaming performance.</li>
+                <li>Bundled with Steam and Heroic.</li>
+                <li>Includes auto-updating Proton-CachyOS.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="feature-row">
+            <img class="feature-image" src="https://files.catbox.moe/or0c6a.png" alt="Bleeding Edge Packages screenshot for Skylight OS" />
+            <div class="feature-copy">
+              <h3>⚡ Bleeding Edge</h3>
+              <p>It uses NixOS unstable together with Chaotic Nyx repositories, giving Skylight OS a fast-moving package base for people who like living a little closer to the edge.</p>
+              <ul>
+                <li>Latest packages with rollbacks.</li>
+                <li>Stays stable and reliable.</li>
+                <li>Access to a huge app repo.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="feature-row">
+            <img class="feature-image" src="https://files.catbox.moe/8bm6nc.png" alt="Simple section screenshot for Skylight OS" />
+            <div class="feature-copy">
+              <h3>🧹 Simple</h3>
+              <p>Skylight OS keeps a minimal baseline for gaming and productivity, avoiding the clutter and unnecessary extras that slow down the overall experience.</p>
+              <ul>
+                <li>Minimal setup focused on the basics.</li>
+                <li>GNOME-based default apps for simplicity.</li>
+                <li>No over-the-top theming, just a clean design.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="feature-row">
+            <img class="feature-image" src="https://files.catbox.moe/or0c6a.png" alt="Lightweight WM screenshot for Skylight OS" />
+            <div class="feature-copy">
+              <h3>🖥️ Lightweight WM</h3>
+              <p>It uses Niri, an easy, configurable, and minimal scrolling window manager that keeps the interface light while still being comfortable for day-to-day use.</p>
+              <ul>
+                <li>Scrolling window management for multitasking.</li>
+                <li>Fast, snappy navigation of programs.</li>
+                <li>Simple, easy-to-learn configuration.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="feature-row" id="download">
+            <img class="feature-image" src="https://files.catbox.moe/e43mac.png" alt="Customizable Skylight OS setup screenshot" />
+            <div class="feature-copy">
+              <h3>🎨 Customizable</h3>
+              <p>Skylight OS lets you skip the painful setup stage and move straight into shaping the system into something personal, polished, and fully yours.</p>
+              <ul>
+                <li>Lots of options for customization.</li>
+                <li>Built for users who want a solid base to customize on.</li>
+                <li>Plenty of themes and icons in the NixOS repos.</li>
+              </ul>
+            </div>
+          </article>
+        </div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="container">Skylight OS is a simple concept page for a NixOS-based system with Adwaita-inspired styling.</div></footer>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggle = document.querySelector('[data-theme-toggle]');
+      const icon = document.querySelector('.theme-icon');
+      let currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+      function renderIcon(theme) {
+        icon.innerHTML = theme === 'dark'
+          ? '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3A7 7 0 0 0 21 12.79Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      }
+
+      function applyTheme(theme) {
+        currentTheme = theme;
+        root.setAttribute('data-theme', theme);
+        renderIcon(theme);
+      }
+
+      applyTheme(currentTheme);
+      toggle.addEventListener('click', function () {
+        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+      });
+    }());
+  </script>
+</body>
+</html>
