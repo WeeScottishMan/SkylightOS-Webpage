@@ -152,7 +152,11 @@
       display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: var(--space-8); align-items: center;
       background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
       border-radius: 26px; padding: var(--space-6); box-shadow: var(--card-shadow);
+      opacity: 0; transform: translateX(48px);
+      transition: opacity 700ms ease, transform 700ms ease, background 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
+
+    .feature-row.is-visible { opacity: 1; transform: translateX(0); }
 
     .feature-row:nth-child(even) .image-slot { order: 2; }
     .feature-row:nth-child(even) .feature-copy { order: 1; }
@@ -176,6 +180,7 @@
       border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 35%, transparent);
       background: var(--surface-soft);
+      cursor: zoom-in;
     }
 
     .feature-image:hover, .feature-image:focus-visible {
@@ -189,6 +194,91 @@
     .feature-copy li::before { content: '•'; color: var(--accent); margin-right: 0.55rem; }
     footer { padding: var(--space-8) 0 var(--space-10); color: var(--text-muted); font-size: var(--text-sm); }
 
+    .image-preview-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: none; place-items: center;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(10px);
+      padding: 24px;
+    }
+
+    .image-preview-overlay.open { display: grid; }
+
+    .image-preview-panel {
+      position: relative;
+      width: min(96vw, 1400px);
+      height: min(96vh, 900px);
+      background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .image-preview-viewport {
+      flex: 1;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: var(--surface-soft);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .image-preview-viewport.grabbing { cursor: grabbing; }
+
+    .image-preview-stage {
+      transform: translate3d(0, 0, 0) scale(1);
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .image-preview-img {
+      display: block;
+      max-width: min(90vw, 1300px);
+      max-height: min(80vh, 800px);
+      width: auto;
+      height: auto;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .image-preview-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      min-height: 40px;
+      min-width: 40px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .image-preview-close:hover {
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent-strong);
+    }
+
+    .image-preview-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: color-mix(in srgb, var(--surface) 80%, transparent);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      pointer-events: none;
+    }
+
     @media (max-width: 860px) {
       .hero-grid, .feature-row { grid-template-columns: 1fr; }
       .feature-row:nth-child(even) .image-slot, .feature-row:nth-child(even) .feature-copy { order: initial; }
@@ -200,12 +290,13 @@
       .hero { padding-top: var(--space-12); }
       .hero-panel, .feature-row { padding: var(--space-4); }
       .image-slot { min-height: 180px; }
+      .image-preview-viewport { width: 92vw; height: 70vh; }
     }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <header class="topbar">
+  <header class="topbar fade-in" style="--delay: 0.05s">
     <div class="container nav-wrap">
       <a class="brand" href="#home" aria-label="Skylight OS home">
         <span class="brand-logo" aria-hidden="true">🪐</span>
@@ -224,9 +315,9 @@
   </header>
 
   <main id="main-content">
-    <section class="hero" id="home">
+    <section class="hero fade-in-slow" style="--delay: 0.12s" id="home">
       <div class="container hero-grid">
-        <div class="hero-copy">
+        <div class="hero-copy fade-in" style="--delay: 0.22s">
           <h1>A clear, calm NixOS experience built for everyday use.</h1>
           <p>Skylight OS pairs declarative power with an Adwaita-inspired interface, giving your desktop a clean GNOME feel while keeping the flexibility and reliability of NixOS at the core.</p>
           <div class="hero-actions">
@@ -234,7 +325,7 @@
             <a class="button secondary" href="#features">See features</a>
           </div>
         </div>
-        <div class="hero-panel" aria-label="Skylight OS preview card">
+        <div class="hero-panel fade-in" style="--delay: 0.34s" aria-label="Skylight OS preview card">
           <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
           <div class="hero-card">
             <h2>Simple by default</h2>
@@ -244,12 +335,12 @@
       </div>
     </section>
 
-    <section class="features" id="features">
+    <section class="features fade-in-slow" style="--delay: 0.42s" id="features">
       <div class="container">
         <h2 class="section-title">Highlights</h2>
         <div class="feature-list">
-          <article class="feature-row">
-            <img class="feature-image" src="https://files.catbox.moe/uzz815.png" alt="Gaming desktop screenshot for Skylight OS" />
+          <article class="feature-row fade-in" style="--delay: 0.08s">
+            <img class="feature-image" src="./images/GamingFirst.png" alt="Gaming desktop screenshot for Skylight OS" tabindex="0" />
             <div class="feature-copy">
               <h3>🎮 Gaming-first</h3>
               <p>Skylight OS is tuned for play first, with a CachyOS-optimized kernel, the scx_rustland scheduler, ananicy rules, and cachyos-settings built into the experience.</p>
@@ -261,8 +352,8 @@
             </div>
           </article>
 
-          <article class="feature-row">
-            <img class="feature-image" src="https://files.catbox.moe/or0c6a.png" alt="Bleeding Edge Packages screenshot for Skylight OS" />
+          <article class="feature-row fade-in" style="--delay: 0.08s">
+            <img class="feature-image" src="./images/BleedingEdge.png" alt="Bleeding Edge Packages screenshot for Skylight OS" tabindex="0" />
             <div class="feature-copy">
               <h3>⚡ Bleeding Edge</h3>
               <p>It uses NixOS unstable together with Chaotic Nyx repositories, giving Skylight OS a fast-moving package base for people who like living a little closer to the edge.</p>
@@ -274,8 +365,8 @@
             </div>
           </article>
 
-          <article class="feature-row">
-            <img class="feature-image" src="https://files.catbox.moe/8bm6nc.png" alt="Simple section screenshot for Skylight OS" />
+          <article class="feature-row fade-in" style="--delay: 0.08s">
+            <img class="feature-image" src="./images/Simple.png" alt="Simple section screenshot for Skylight OS" tabindex="0" />
             <div class="feature-copy">
               <h3>🧹 Simple</h3>
               <p>Skylight OS keeps a minimal baseline for gaming and productivity, avoiding the clutter and unnecessary extras that slow down the overall experience.</p>
@@ -287,8 +378,8 @@
             </div>
           </article>
 
-          <article class="feature-row">
-            <img class="feature-image" src="https://files.catbox.moe/or0c6a.png" alt="Lightweight WM screenshot for Skylight OS" />
+          <article class="feature-row fade-in" style="--delay: 0.08s">
+            <img class="feature-image" src="./images/LightweightWM.png" alt="Lightweight WM screenshot for Skylight OS" tabindex="0" />
             <div class="feature-copy">
               <h3>🖥️ Lightweight WM</h3>
               <p>It uses Niri, an easy, configurable, and minimal scrolling window manager that keeps the interface light while still being comfortable for day-to-day use.</p>
@@ -301,7 +392,7 @@
           </article>
 
           <article class="feature-row" id="download">
-            <img class="feature-image" src="https://files.catbox.moe/e43mac.png" alt="Customizable Skylight OS setup screenshot" />
+            <img class="feature-image" src="./images/Customizable.png" alt="Customizable Skylight OS setup screenshot" tabindex="0" />
             <div class="feature-copy">
               <h3>🎨 Customizable</h3>
               <p>Skylight OS lets you skip the painful setup stage and move straight into shaping the system into something personal, polished, and fully yours.</p>
@@ -312,15 +403,27 @@
               </ul>
             </div>
           </article>
-        </div></div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer><div class="container">Skylight OS is a simple concept page for a NixOS-based system with Adwaita-inspired styling.</div></footer>
+  <footer class="fade-in" style="--delay: 0.8s"><div class="container">Skylight OS is a simple concept page for a NixOS-based system with Adwaita-inspired styling.</div></footer>
+
+  <div class="image-preview-overlay" id="imagePreviewOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="image-preview-panel">
+      <button class="image-preview-close" id="imagePreviewClose" aria-label="Close preview">✕</button>
+      <div class="image-preview-viewport" id="imagePreviewViewport">
+        <div class="image-preview-stage" id="imagePreviewStage">
+          <img class="image-preview-img" id="imagePreviewImg" alt="" />
+        </div>
+      </div>
+      <div class="image-preview-hint">Scroll to zoom • Drag to pan • Esc to close</div>
+    </div>
+  </div>
 
   <script>
-    (function () {
+    (() => {
       const root = document.documentElement;
       const toggle = document.querySelector('[data-theme-toggle]');
       const icon = document.querySelector('.theme-icon');
@@ -340,10 +443,117 @@
       }
 
       applyTheme(currentTheme);
-      toggle.addEventListener('click', function () {
-        applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+      toggle.addEventListener('click', () => applyTheme(currentTheme === 'dark' ? 'light' : 'dark'));
+
+      const overlay = document.getElementById('imagePreviewOverlay');
+      const viewport = document.getElementById('imagePreviewViewport');
+      const stage = document.getElementById('imagePreviewStage');
+      const img = document.getElementById('imagePreviewImg');
+      const closeBtn = document.getElementById('imagePreviewClose');
+
+      let scale = 1;
+      let panX = 0;
+      let panY = 0;
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+
+      function applyTransform() {
+        stage.style.transform = `translate3d(${panX}px, ${panY}px, 0) scale(${scale})`;
+      }
+
+      function resetView() {
+        scale = 1;
+        panX = 0;
+        panY = 0;
+        applyTransform();
+      }
+
+      function openPreview(src, alt) {
+        img.src = src;
+        img.alt = alt || '';
+        resetView();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        closeBtn.focus();
+      }
+
+      function closePreview() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        dragging = false;
+        viewport.classList.remove('grabbing');
+      }
+
+      document.querySelectorAll('.feature-image').forEach((image) => {
+        image.addEventListener('click', () => openPreview(image.src, image.alt));
+        image.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openPreview(image.src, image.alt);
+          }
+        });
       });
-    }());
+
+      closeBtn.addEventListener('click', closePreview);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePreview();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('open')) closePreview();
+      });
+
+      viewport.addEventListener('wheel', (e) => {
+        if (!overlay.classList.contains('open')) return;
+        e.preventDefault();
+        const direction = e.deltaY < 0 ? 1 : -1;
+        const nextScale = scale * (1 + direction * 0.12);
+        scale = Math.min(5, Math.max(1, nextScale));
+        if (scale === 1) {
+          panX = 0;
+          panY = 0;
+        }
+        applyTransform();
+      }, { passive: false });
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (scale <= 1) return;
+        dragging = true;
+        viewport.classList.add('grabbing');
+        startX = e.clientX - panX;
+        startY = e.clientY - panY;
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        panX = e.clientX - startX;
+        panY = e.clientY - startY;
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        dragging = false;
+        viewport.classList.remove('grabbing');
+      });
+
+      const articleObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            articleObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.18 });
+
+      document.querySelectorAll('.feature-row').forEach((article, index) => {
+        article.style.transitionDelay = `${index * 120}ms`;
+        articleObserver.observe(article);
+      });
+    })();
   </script>
 </body>
 </html>
