@@ -1,4 +1,4 @@
-# 🪐 Skylight OS Webpage 🪐
+# 🪐 [Skylight OS Webpage](https://weescottishman.github.io/SkylightOS-Webpage/) 🪐
 
 - ###  ✨️ My website for showcasing my clean and minimal [NixOS](https://nixos.org) configuration.
 
