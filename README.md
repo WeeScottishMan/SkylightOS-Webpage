@@ -1,4 +1,4 @@
-# 🪐 [Skylight OS Webpage](https://weescottishman.github.io/SkylightOS-Webpage/) 🪐
+# 🪐 [SkylightOS Webpage](https://weescottishman.github.io/SkylightOS-Webpage/) 🪐
 
 - ###  ✨️ My website for showcasing my clean and minimal Arch Linux configuration.
 
