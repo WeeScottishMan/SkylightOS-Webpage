@@ -11,4 +11,4 @@
 - #### 👍️ Add a suggestion section for programs that might be useful to users of the system.
 
 #
-> ⋆˙⟡︱Find the project here [Skylight OS](https://github.com/WeeScottishMan/SkylightOS)
+> ⋆˙⟡︱Find the project here [SkylightOS](https://github.com/WeeScottishMan/SkylightOS)
